@@ -1,68 +1,41 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
+@layer base {
   :root {
-    color: #213547;
-    background-color: #ffffff;
+    --cyber-dark: #0a0a1f;
+    --cyber-cyan: #00f3ff;
+    --cyber-magenta: #ff00ff;
+    --cyber-glass: rgba(10, 10, 31, 0.7);
+    --cyber-grid: rgba(0, 243, 255, 0.1);
   }
-  a:hover {
-    color: #747bff;
+
+  body {
+    @apply bg-cyber-dark text-white font-mono overflow-hidden;
+    background-image: 
+      linear-gradient(var(--cyber-grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--cyber-grid) 1px, transparent 1px);
+    background-size: 40px 40px;
   }
-  button {
-    background-color: #f9f9f9;
+}
+
+@layer components {
+  .neon-text {
+    @apply text-cyber-cyan drop-shadow-[0_0_5px_rgba(0,243,255,0.8)];
+  }
+  
+  .neon-border {
+    @apply border border-cyber-cyan shadow-[0_0_10px_rgba(0,243,255,0.3)];
+  }
+
+  .glass-panel {
+    @apply bg-cyber-glass backdrop-blur-md border border-white/10 shadow-xl;
+  }
+
+  .cyber-button {
+    @apply px-4 py-2 bg-transparent text-cyber-cyan border border-cyber-cyan 
+           hover:bg-cyber-cyan/10 hover:shadow-[0_0_15px_rgba(0,243,255,0.5)] 
+           transition-all duration-300 uppercase tracking-widest font-bold;
   }
 }

@@ -1,0 +1,28 @@
+name: Manas Autonomous Routine
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # Run every 6 hours
+  workflow_dispatch:      # Allow manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wake up Manas (Checkout)
+        uses: actions/checkout@v3
+
+      - name: Generate Thought
+        run: |
+          pwsh ./generate_thought.ps1
+
+      - name: Update Memory (Commit & Push)
+        run: |
+          git config --global user.name 'Manas-AI-Bot'
+          git config --global user.email 'bot@manas.ai'
+          git add docs/status.json
+          git commit -m "Auto: Manas updated thought process" || exit 0
+          git push
