@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MANAS: VISUAL NEXUS</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700&display=swap');
+        
+        :root {
+            --bg-color: #050510;
+            --glass-bg: rgba(10, 20, 30, 0.85);
+            --primary-cyan: #00f3ff;
+            --primary-magenta: #ff00ff;
+            --text-color: #e0e0e0;
+            --grid-line: rgba(0, 243, 255, 0.05);
+        }
+
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            font-family: 'Share Tech Mono', monospace; 
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            background-image: 
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
+                radial-gradient(circle at center, #1a1a3a 0%, #000 120%);
+            background-size: 40px 40px, 40px 40px, 100% 100%;
+            overflow: hidden;
+        }
+
+        .hud-container { 
+            width: 90%; 
+            max-width: 900px; 
+            border: 1px solid var(--primary-cyan); 
+            padding: 30px; 
+            position: relative; 
+            box-shadow: 0 0 40px rgba(0, 243, 255, 0.15); 
+            background: var(--glass-bg);
+            backdrop-filter: blur(5px);
+            clip-path: polygon(
+                0% 0%, 
+                100% 0%, 
+                100% 85%, 
+                95% 100%, 
+                5% 100%, 
+                0% 85%
+            );
+        }
+
+        /* Decorative Corners */
+        .hud-corner-tl { position: absolute; top: -1px; left: -1px; width: 30px; height: 30px; border-top: 3px solid var(--primary-magenta); border-left: 3px solid var(--primary-magenta); }
+        .hud-corner-br { position: absolute; bottom: -1px; right: -1px; width: 30px; height: 30px; border-bottom: 3px solid var(--primary-magenta); border-right: 3px solid var(--primary-magenta); }
+
+        h1 { 
+            text-align: center; 
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 4px; 
+            text-shadow: 0 0 15px var(--primary-cyan); 
+            margin-bottom: 40px; 
+            font-size: 2.5em;
+            background: linear-gradient(to right, var(--primary-cyan), #fff, var(--primary-magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+        }
+        h1::after {
+            content: 'SYSTEM ONLINE';
+            display: block;
+            font-size: 0.3em;
+            letter-spacing: 10px;
+            margin-top: 5px;
+            color: var(--primary-cyan);
+            -webkit-text-fill-color: var(--primary-cyan);
+            opacity: 0.8;
+        }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+
+        .panel { 
+            border: 1px solid rgba(0, 243, 255, 0.3); 
+            padding: 20px; 
+            background: rgba(0,0,0,0.4); 
+            position: relative;
+        }
+        .panel h3 { 
+            margin-top: 0; 
+            color: var(--primary-cyan); 
+            font-size: 0.9em;
+            letter-spacing: 2px;
+            border-bottom: 1px solid rgba(0, 243, 255, 0.3); 
+            padding-bottom: 8px; 
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .stat-value { 
+            font-size: 2.5em; 
+            text-align: right; 
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            font-family: 'Orbitron', sans-serif;
+        }
+        .stat-label { font-size: 0.7em; color: rgba(255, 255, 255, 0.6); text-align: right; }
+
+        .level-box { 
+            grid-column: 1 / -1; 
+            text-align: center; 
+            padding: 25px; 
+            border: 1px solid var(--primary-magenta); 
+            background: rgba(255, 0, 255, 0.05);
+            margin-bottom: 10px;
+            position: relative;
+        }
+        
+        .level-display {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 4em;
+            line-height: 1;
+            text-shadow: 0 0 20px var(--primary-magenta);
+            color: #fff;
+        }
+        .level-label { color: var(--primary-magenta); letter-spacing: 3px; font-weight: bold; }
+
+        .progress-bar { 
+            width: 100%; 
+            height: 12px; 
+            background: #220022; 
+            margin-top: 20px; 
+            position: relative; 
+            border: 1px solid var(--primary-magenta);
+        }
+        .progress-fill { 
+            height: 100%; 
+            background: var(--primary-magenta); 
+            width: 0%; 
+            transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1); 
+            box-shadow: 0 0 15px var(--primary-magenta); 
+            position: relative;
+        }
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0; right: 0; bottom: 0;
+            width: 5px;
+            background: #fff;
+            box-shadow: 0 0 10px #fff;
+        }
+        
+        .scan-line { 
+            width: 100%; 
+            height: 2px; 
+            background: rgba(0, 243, 255, 0.5); 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            animation: scan 4s linear infinite; 
+            pointer-events: none;
+            z-index: 10;
+        }
+        @keyframes scan { 
+            0% { top: -10%; opacity: 0; } 
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 110%; opacity: 0; } 
+        }
+
+        #last-sync { 
+            text-align: right; 
+            font-size: 0.7em; 
+            margin-top: 15px; 
+            color: var(--primary-cyan);
+            border-top: 1px dashed rgba(0, 243, 255, 0.3);
+            padding-top: 5px;
+        }
+
+        .blink { animation: blink 2s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body>
+    <div class="hud-container">
+        <div class="hud-corner-tl"></div>
+        <div class="hud-corner-br"></div>
+        <div class="scan-line"></div>
+        
+        <h1>VISUAL NEXUS</h1>
+        
+        <div class="grid">
+            <div class="level-box">
+                <div class="level-label">OPERATOR LEVEL</div>
+                <div class="level-display" id="level-display">--</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="xp-bar"></div>
+                </div>
+                <div class="stat-label" style="margin-top:10px; font-size: 0.9em;">
+                    XP: <span id="xp-val" style="color:#fff">0</span> / <span id="next-xp">0</span> 
+                    (<span id="progress-val">0</span>%)
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3><span>MEMORY_BANKS</span> <span>[SECURED]</span></h3>
+                <div class="stat-value" id="files-val">0</div>
+                <div class="stat-label">FILES INDEXED</div>
+            </div>
+
+            <div class="panel">
+                <h3><span>KNOWLEDGE_BASE</span> <span>[ACTIVE]</span></h3>
+                <div class="stat-value" id="lines-val">0</div>
+                <div class="stat-label">LINES OF CODE</div>
+            </div>
+        </div>
+        
+        <div id="last-sync" class="blink">INITIALIZING UPLINK...</div>
+    </div>
+
+    <script>
+        fetch('stats.json?t=' + new Date().getTime())
+            .then(response => response.json())
+            .then(data => {
+                // Number Animation Helper
+                const animateValue = (id, start, end, duration) => {
+                    const obj = document.getElementById(id);
+                    let startTimestamp = null;
+                    const step = (timestamp) => {
+                        if (!startTimestamp) startTimestamp = timestamp;
+                        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                        obj.innerHTML = Math.floor(progress * (end - start) + start);
+                        if (progress < 1) {
+                            window.requestAnimationFrame(step);
+                        }
+                    };
+                    window.requestAnimationFrame(step);
+                };
+
+                document.getElementById('level-display').innerText = data.level;
+                
+                animateValue('xp-val', 0, data.xp, 1000);
+                document.getElementById('next-xp').innerText = data.next_xp;
+                document.getElementById('progress-val').innerText = data.progress;
+                
+                animateValue('files-val', 0, data.total_files, 1000);
+                animateValue('lines-val', 0, data.total_lines, 1000);
+                
+                document.getElementById('last-sync').innerText = 'LAST SYNC: ' + data.last_sync;
+                
+                // Animate Bar
+                setTimeout(() => {
+                    document.getElementById('xp-bar').style.width = data.progress + '%';
+                }, 100);
+            })
+            .catch(err => {
+                console.error('System Offline', err);
+                document.getElementById('last-sync').innerText = 'DATA LINK OFFLINE (LOCAL MODE)';
+                document.getElementById('last-sync').style.color = '#ff0000';
+            });
+    </script>
+</body>
+</html>
