@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Memory } from './MemoryService';
+import type { Memory } from './MemoryService';
 
 interface Props {
     memories: Memory[];

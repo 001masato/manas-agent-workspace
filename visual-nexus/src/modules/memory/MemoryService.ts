@@ -23,7 +23,7 @@ export const MemoryService = {
             },
             {
                 id: 'm2',
-                timestamp: '2025-12-08',
+                timestamp: '2025-12-09',
                 title: 'Project Kamui',
                 type: 'inspiration',
                 priority: 'max',
@@ -31,11 +31,19 @@ export const MemoryService = {
             },
             {
                 id: 'm3',
-                timestamp: '2025-12-07',
-                title: 'System Awakening',
+                timestamp: '2025-12-09',
+                title: 'Visual Nexus Online',
                 type: 'event',
                 priority: 'high',
-                context: 'Initialized Manas System Core. Defined Personality and Role.'
+                context: 'Activated Visual Nexus Dashboard. Integrating Skill Service and Memory Service.'
+            },
+            {
+                id: 'm4',
+                timestamp: '2025-12-09',
+                title: 'System Optimization',
+                type: 'log',
+                priority: 'medium',
+                context: 'Refining Manas personality and response patterns for smoother interaction.'
             }
         ];
     }
