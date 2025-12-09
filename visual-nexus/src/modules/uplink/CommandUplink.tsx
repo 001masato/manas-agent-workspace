@@ -1,14 +1,22 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Power, Activity, Shield, Wifi } from 'lucide-react';
+import { Power, Activity, Shield, Wifi, Command as CommandIcon, Terminal as TerminalIcon, Check } from 'lucide-react';
+import { CommandService, type Command } from './CommandService';
 
 export const CommandUplink = () => {
     const [isActive, setIsActive] = useState(false);
     const [logs, setLogs] = useState<string[]>([]);
+    const [commands, setCommands] = useState<Command[]>([]);
     const terminalRef = useRef<HTMLDivElement>(null);
+    const [copiedId, setCopiedId] = useState<string | null>(null);
+
+    useEffect(() => {
+        setCommands(CommandService.getCommands());
+    }, []);
 
     const addLog = (msg: string) => {
-        setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${msg}`]);
+        setLogs(prev => [...prev.slice(-9), `[${new Date().toLocaleTimeString()}] ${msg}`]);
     };
 
     useEffect(() => {
@@ -26,29 +34,46 @@ export const CommandUplink = () => {
             { msg: "INITIALIZING UPLINK PROTOCOL...", delay: 0 },
             { msg: "ESTABLISHING SECURE CONNECTION...", delay: 800 },
             { msg: "VERIFYING BIOMETRICS... MATCH CONFIRMED.", delay: 1600 },
-            { msg: "SYNCING MEMORY BANKS to GITHUB...", delay: 2400 },
-            { msg: "SCANNING FOR NEW SKILL VECTORS...", delay: 3200 },
-            { msg: "SYSTEM ALL GREEN. READY FOR COMMAND.", delay: 4000 }
+            { msg: "SYSTEM ALL GREEN. READY FOR COMMAND.", delay: 2400 }
         ];
 
         sequence.forEach(({ msg, delay }) => {
             setTimeout(() => addLog(msg), delay);
         });
+    };
 
-        setTimeout(() => setIsActive(false), 5000);
+    const handleCommandClick = (cmd: Command) => {
+        if (!isActive) {
+            handleLaunch();
+            setTimeout(() => executeCommand(cmd), 3000); // Wait for boot if not active
+        } else {
+            executeCommand(cmd);
+        }
+    };
+
+    const executeCommand = (cmd: Command) => {
+        navigator.clipboard.writeText(cmd.command);
+        setCopiedId(cmd.id);
+
+        addLog(`COMMAND SELECTED: ${cmd.label}`);
+        addLog(`> ${cmd.command}`);
+        addLog(`SUCCESS: Copied to Clipboard. Ready to execute.`);
+        addLog(`XP GAINED: +${cmd.xpReward} XP`); // Placeholder visual
+
+        setTimeout(() => setCopiedId(null), 2000);
     };
 
     return (
         <div className="w-full max-w-6xl mt-12 mb-24 glass-panel p-8 border-t-4 border-t-cyber-magenta">
-            <div className="flex flex-col md:flex-row gap-8 items-start">
+            <h2 className="text-xl neon-text flex items-center gap-2 mb-8">
+                <Activity className="animate-pulse" /> COMMAND UPLINK
+            </h2>
 
-                {/* Control Panel */}
-                <div className="w-full md:w-1/3 flex flex-col gap-6">
-                    <h2 className="text-xl neon-text flex items-center gap-2">
-                        <Activity className="animate-pulse" /> COMMAND UPLINK
-                    </h2>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                    <div className="grid grid-cols-2 gap-4 mb-4">
+                {/* Left: Status Panel */}
+                <div className="flex flex-col gap-6">
+                    <div className="grid grid-cols-2 gap-4">
                         <div className="p-4 border border-cyber-cyan/30 bg-cyber-dark/50 flex flex-col items-center gap-2">
                             <Shield size={20} className="text-cyber-cyan" />
                             <span className="text-xs text-cyber-cyan/70">FIREWALL</span>
@@ -65,27 +90,54 @@ export const CommandUplink = () => {
                         onClick={handleLaunch}
                         disabled={isActive}
                         className={`
-                            relative overflow-hidden group py-6 px-8 font-bold text-xl tracking-widest transition-all duration-300
+                            relative overflow-hidden group py-6 px-8 font-bold text-xl tracking-widest transition-all duration-300 w-full
                             ${isActive
-                                ? 'bg-cyber-magenta/20 text-cyber-magenta border border-cyber-magenta cursor-not-allowed'
+                                ? 'bg-cyber-magenta/20 text-cyber-magenta border border-cyber-magenta cursor-not-allowed hidden' // Hide when active to show commands
                                 : 'bg-cyber-dark text-cyber-cyan border border-cyber-cyan hover:bg-cyber-cyan/10 hover:shadow-[0_0_30px_rgba(0,243,255,0.3)]'}
                         `}
                     >
                         <span className="relative z-10 flex items-center justify-center gap-3">
                             <Power size={24} />
-                            {isActive ? 'PROCESSING...' : 'SYSTEM LAUNCH'}
+                            SYSTEM LAUNCH
                         </span>
-                        {!isActive && (
-                            <div className="absolute inset-0 bg-cyber-cyan/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                        )}
                     </button>
+
+                    {/* Quick Commands Grid (Shows when Active) */}
+                    <AnimatePresence>
+                        {isActive && (
+                            <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                className="grid grid-cols-1 gap-3"
+                            >
+                                <div className="text-xs text-cyber-cyan/50 tracking-widest mb-2 border-b border-cyber-cyan/20 pb-1">QUICK COMMANDS</div>
+                                {commands.map(cmd => (
+                                    <button
+                                        key={cmd.id}
+                                        onClick={() => handleCommandClick(cmd)}
+                                        className="flex items-center justify-between p-3 border border-cyber-cyan/30 bg-cyber-cyan/5 hover:bg-cyber-cyan/20 transition-all group text-left"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <cmd.icon size={16} className="text-cyber-cyan group-hover:text-white" />
+                                            <span className="text-sm font-bold text-cyber-cyan group-hover:text-white">{cmd.label}</span>
+                                        </div>
+                                        {copiedId === cmd.id ? (
+                                            <Check size={14} className="text-green-500" />
+                                        ) : (
+                                            <div className="text-[10px] text-cyber-cyan/30 group-hover:text-cyber-cyan/70 font-mono">+{cmd.xpReward} XP</div>
+                                        )}
+                                    </button>
+                                ))}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
 
-                {/* Terminal Window */}
-                <div className="w-full md:w-2/3">
-                    <div className="h-64 bg-black/80 border border-cyber-cyan/30 p-4 font-mono text-sm overflow-hidden relative">
-                        <div className="absolute top-0 left-0 right-0 h-6 bg-cyber-cyan/10 border-b border-cyber-cyan/20 flex items-center px-4 justify-between">
-                            <span className="text-xs text-cyber-cyan">TERMINAL OUTPUT</span>
+                {/* Right: Terminal Window */}
+                <div className="col-span-1 lg:col-span-2 h-full min-h-[400px]">
+                    <div className="h-full bg-black/80 border border-cyber-cyan/30 p-4 font-mono text-sm overflow-hidden relative flex flex-col">
+                        <div className="absolute top-0 left-0 right-0 h-6 bg-cyber-cyan/10 border-b border-cyber-cyan/20 flex items-center px-4 justify-between shrink-0">
+                            <span className="text-xs text-cyber-cyan flex items-center gap-2"><TerminalIcon size={12} /> TERMINAL OUTPUT</span>
                             <div className="flex gap-1">
                                 <div className="w-2 h-2 rounded-full bg-red-500" />
                                 <div className="w-2 h-2 rounded-full bg-yellow-500" />
@@ -95,16 +147,16 @@ export const CommandUplink = () => {
 
                         <div
                             ref={terminalRef}
-                            className="mt-6 h-full overflow-y-auto custom-scrollbar flex flex-col gap-1 pb-4"
+                            className="mt-6 flex-grow overflow-y-auto custom-scrollbar flex flex-col gap-1 pb-4"
                         >
-                            <AnimatePresence>
+                            <AnimatePresence mode="popLayout">
                                 {logs.length === 0 && !isActive && (
                                     <motion.div
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 0.5 }}
                                         className="text-cyber-cyan/50 italic"
                                     >
-                                        Waiting for command input...
+                                        System Standby... Initiate Uplink to access command protocols.
                                     </motion.div>
                                 )}
                                 {logs.map((log, i) => (
@@ -112,23 +164,27 @@ export const CommandUplink = () => {
                                         key={i}
                                         initial={{ opacity: 0, x: -10 }}
                                         animate={{ opacity: 1, x: 0 }}
-                                        className="text-green-400"
+                                        className="text-green-400 font-mono text-xs md:text-sm break-all"
                                     >
                                         <span className="text-cyber-magenta mr-2">{'>'}</span>
                                         {log}
                                     </motion.div>
                                 ))}
                             </AnimatePresence>
+
                             {isActive && (
                                 <motion.div
                                     animate={{ opacity: [0, 1, 0] }}
                                     transition={{ repeat: Infinity, duration: 0.8 }}
-                                    className="w-2 h-4 bg-green-400"
-                                />
+                                    className="flex items-center gap-2 text-green-500 mt-2"
+                                >
+                                    <span>_</span>
+                                </motion.div>
                             )}
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     );

@@ -1,9 +1,11 @@
+
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { MemoryHoloDeck } from './modules/memory/MemoryHoloDeck';
 import { SkillArsenal } from './modules/skills/SkillArsenal';
 import { MemoryService, type Memory } from './modules/memory/MemoryService';
 import { CommandUplink } from './modules/uplink/CommandUplink';
+import { SystemDreaming } from './modules/dream/SystemDreaming';
 
 function App() {
   const [isLaunched, setIsLaunched] = useState(false);
@@ -22,6 +24,7 @@ function App() {
           background: 'radial-gradient(circle at center, rgba(0,243,255,0.05) 0%, rgba(0,0,0,0.8) 100%)'
         }}
       />
+      <SystemDreaming />
 
       {!isLaunched ? (
         <motion.div

@@ -1,0 +1,100 @@
+[
+  {
+    "id": "agent-md-generator",
+    "name": "Agent MD Generator",
+    "description": "---...",
+    "category": "template",
+    "path": "E:\\マナス\\.agent\\prompts\\templates\\agent-md-generator.md"
+  },
+  {
+    "id": "ai-agent-architect",
+    "name": "AI Architect",
+    "description": "---...",
+    "category": "template",
+    "path": "E:\\マナス\\.agent\\prompts\\templates\\ai-agent-architect.md"
+  },
+  {
+    "id": "codex_agent_blueprint",
+    "name": "Codex Agent Configuration & Blueprint",
+    "description": "```toml...",
+    "category": "template",
+    "path": "E:\\マナス\\.agent\\prompts\\templates\\codex_agent_blueprint.md"
+  },
+  {
+    "id": "gas_slide_generation_prompt",
+    "name": "Google Apps Script (GAS) スライド生成プロンプト",
+    "description": "このプロンプトは、テキスト情報からGoogleスライド生成用のJavaScriptオブジェクト配列（`slideData`）を生成するための強力な指示書です。...",
+    "category": "template",
+    "path": "E:\\マナス\\.agent\\prompts\\templates\\gas_slide_generation_prompt.md"
+  },
+  {
+    "id": "gas_slide_json_prompt",
+    "name": "GAS Slide Data JSON Generation Prompt",
+    "description": "このプロンプトは、Google Apps Scriptスライド生成用の `slideData` オブジェクト配列を、単体かつ純粋なJSON形式で生成するための指示書です。...",
+    "category": "template",
+    "path": "E:\\マナス\\.agent\\prompts\\templates\\gas_slide_json_prompt.md"
+  },
+  {
+    "id": "goal_seek_prompt",
+    "name": "ゴールシーク型プロンプト設計ガイド",
+    "description": "このプロンプトは、「曖昧さを変数で制御して成果物を一本化する」ゴールシーク型のアプローチを定義したガイドです。...",
+    "category": "template",
+    "path": "E:\\マナス\\.agent\\prompts\\templates\\goal_seek_prompt.md"
+  },
+  {
+    "id": "kyotaku_care_plan_prompt",
+    "name": "対話型・主任介護支援専門員エージェント（居宅版）",
+    "description": "この内容は **システムプロンプト（System Prompt）** として機能します。...",
+    "category": "template",
+    "path": "E:\\マナス\\.agent\\prompts\\templates\\kyotaku_care_plan_prompt.md"
+  },
+  {
+    "id": "note_writing_prompt",
+    "name": "note.com記事作成プロンプト (シュンスケ式)",
+    "description": "このプロンプトは、note.com向けの記事を作成するための構造化されたプロンプトです。...",
+    "category": "template",
+    "path": "E:\\マナス\\.agent\\prompts\\templates\\note_writing_prompt.md"
+  },
+  {
+    "id": "project_execution_system",
+    "name": "プロジェクト遂行システム (自律型エージェント用)",
+    "description": "このプロンプトは、AIエージェントがプロジェクトを自律的に遂行するための包括的なワークフロー定義です。...",
+    "category": "template",
+    "path": "E:\\マナス\\.agent\\prompts\\templates\\project_execution_system.md"
+  },
+  {
+    "id": "README",
+    "name": "よく使う依頼文のひな形",
+    "description": "このディレクトリには、再利用可能な依頼文テンプレートが保存されています。...",
+    "category": "template",
+    "path": "E:\\マナス\\.agent\\prompts\\templates\\README.md"
+  },
+  {
+    "id": "shunsuke_blog_prompt",
+    "name": "シュンスケ式ブログ記事作成プロンプト",
+    "description": "このプロンプトは、YAML形式で構造化された「シュンスケ式」プロンプトデザインの例です。...",
+    "category": "template",
+    "path": "E:\\マナス\\.agent\\prompts\\templates\\shunsuke_blog_prompt.md"
+  },
+  {
+    "id": "tokuyo_care_plan_prompt",
+    "name": "対話型・主任介護支援専門員エージェント（特養版）",
+    "description": "【このプロンプト全体を AI のシステムプロンプトとして設定すること】...",
+    "category": "template",
+    "path": "E:\\マナス\\.agent\\prompts\\templates\\tokuyo_care_plan_prompt.md"
+  },
+  {
+    "id": "care-plan",
+    "name": "ケアプラン作成プロンプト",
+    "description": "---...",
+    "category": "workflow",
+    "path": "E:\\マナス\\.agent\\prompts\\care-plan.md"
+  },
+  {
+    "id": "note-writing",
+    "name": "note.com記事作成プロンプト",
+    "description": "---...",
+    "category": "workflow",
+    "path": "E:\\マナス\\.agent\\prompts\\note-writing.md"
+  }
+]

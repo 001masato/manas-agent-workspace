@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sci-Fi HUD Interface</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-purple: #bc13fe;
+            --neon-pink: #ff0055;
+            --bg-dark: #05070a;
+            --glass-border: rgba(0, 243, 255, 0.3);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Share Tech Mono', monospace;
+            overflow: hidden;
+            color: var(--neon-blue);
+        }
+
+        /* メインスクリーン（湾曲したモニター風） */
+        .screen-container {
+            width: 90vw;
+            height: 80vh;
+            background: radial-gradient(circle at center, #0a1525 0%, #000000 100%);
+            border: 2px solid var(--glass-border);
+            border-radius: 20px;
+            position: relative;
+            box-shadow: 
+                0 0 20px var(--glass-border),
+                inset 0 0 50px rgba(0, 243, 255, 0.1);
+            display: grid;
+            grid-template-rows: 40px 1fr 150px;
+            padding: 20px;
+            box-sizing: border-box;
+            perspective: 1000px;
+        }
+
+        /* 走査線エフェクト */
+        .scanlines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.2) 50%,
+                rgba(0,0,0,0.2)
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0.6;
+            border-radius: 18px;
+        }
+
+        /* 四隅の装飾 */
+        .corner {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 3px solid var(--neon-blue);
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+        .tl { top: -2px; left: -2px; border-right: none; border-bottom: none; border-radius: 10px 0 0 0; }
+        .tr { top: -2px; right: -2px; border-left: none; border-bottom: none; border-radius: 0 10px 0 0; }
+        .bl { bottom: -2px; left: -2px; border-right: none; border-top: none; border-radius: 0 0 0 10px; }
+        .br { bottom: -2px; right: -2px; border-left: none; border-top: none; border-radius: 0 0 10px 0; }
+
+        /* ヘッダー */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 243, 255, 0.3);
+            padding-bottom: 5px;
+        }
+        .header-text { font-size: 12px; letter-spacing: 2px; opacity: 0.8; }
+        .status-dot { width: 8px; height: 8px; background: var(--neon-blue); border-radius: 50%; box-shadow: 0 0 5px var(--neon-blue); animation: blink 2s infinite; }
+
+        /* メインコンテンツエリア */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 300px 1fr;
+            gap: 20px;
+            position: relative;
+            padding: 20px 0;
+        }
+
+        /* 左右のネットワークグラフ（Canvas用コンテナ） */
+        .network-panel {
+            position: relative;
+            border: 1px solid rgba(0, 243, 255, 0.1);
+            background: rgba(0, 20, 40, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        canvas { display: block; width: 100%; height: 100%; }
+
+        /* 中央のコアオブジェクト */
+        .center-core {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .core-circle {
+            width: 150px;
+            height: 150px;
+            border: 2px solid rgba(188, 19, 254, 0.5);
+            border-radius: 50%;
+            position: absolute;
+            box-shadow: 0 0 30px rgba(188, 19, 254, 0.2);
+            animation: spin 10s linear infinite;
+        }
+        
+        .core-circle::before {
+            content: '';
+            position: absolute;
+            top: -10px; left: -10px; right: -10px; bottom: -10px;
+            border: 2px dashed var(--neon-blue);
+            border-radius: 50%;
+            animation: spin-reverse 15s linear infinite;
+        }
+
+        .hexagon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, rgba(0,243,255,0.2), rgba(188,19,254,0.4));
+            position: absolute;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            box-shadow: 0 0 40px var(--neon-purple);
+            animation: pulse 3s infinite ease-in-out;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+        
+        .hexagon-inner {
+            width: 40px;
+            height: 40px;
+            background: #000;
+            position: absolute;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            z-index: 2;
+        }
+
+        /* フッター（データパネル） */
+        .footer {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            border-top: 1px solid rgba(0, 243, 255, 0.3);
+            padding-top: 15px;
+        }
+
+        .data-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .data-title {
+            font-size: 10px;
+            color: var(--neon-purple);
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .text-block {
+            font-size: 10px;
+            line-height: 1.4;
+            color: rgba(0, 243, 255, 0.7);
+        }
+
+        /* グラフバー */
+        .chart-container {
+            display: flex;
+            align-items: flex-end;
+            gap: 3px;
+            height: 60px;
+            border-bottom: 1px solid var(--neon-blue);
+            padding-bottom: 2px;
+        }
+        .bar {
+            flex: 1;
+            background: linear-gradient(to top, var(--neon-blue), transparent);
+            opacity: 0.7;
+            animation: bar-fluctuate 2s infinite ease-in-out;
+        }
+
+        /* ゲージ */
+        .gauge-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        .gauge {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top: 3px solid var(--neon-pink);
+            border-right: 3px solid var(--neon-purple);
+            transform: rotate(-45deg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 10px rgba(188, 19, 254, 0.3);
+        }
+        .gauge span {
+            transform: rotate(45deg);
+            font-size: 12px;
+        }
+
+        /* アニメーション定義 */
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes spin-reverse { 100% { transform: rotate(-360deg); } }
+        @keyframes pulse {
+            0% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.1); filter: brightness(1.5); }
+            100% { transform: scale(1); filter: brightness(1); }
+        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        @keyframes bar-fluctuate {
+            0%, 100% { height: var(--h); }
+            50% { height: calc(var(--h) * 0.8); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="screen-container">
+        <!-- 走査線オーバーレイ -->
+        <div class="scanlines"></div>
+        
+        <!-- 四隅 -->
+        <div class="corner tl"></div>
+        <div class="corner tr"></div>
+        <div class="corner bl"></div>
+        <div class="corner br"></div>
+
+        <!-- ヘッダー -->
+        <div class="header">
+            <div class="header-text">SYS.DIAGNOSTIC.MODE // V.4.0.2</div>
+            <div class="header-text" style="color:var(--neon-purple)">SECURE CONNECTION ESTABLISHED</div>
+            <div class="status-dot"></div>
+        </div>
+
+        <!-- メインエリア -->
+        <div class="main-content">
+            <!-- 左ネットワーク -->
+            <div class="network-panel" id="left-panel">
+                <canvas id="canvas-left"></canvas>
+            </div>
+
+            <!-- 中央コア -->
+            <div class="center-core">
+                <div class="core-circle"></div>
+                <div class="hexagon"></div>
+                <div class="hexagon-inner"></div>
+            </div>
+
+            <!-- 右ネットワーク -->
+            <div class="network-panel" id="right-panel">
+                <canvas id="canvas-right"></canvas>
+            </div>
+        </div>
+
+        <!-- フッター -->
+        <div class="footer">
+            <!-- テキストデータ -->
+            <div class="data-panel">
+                <div class="data-title">System Logs</div>
+                <div class="text-block">
+                    > Initializing core protocols...<br>
+                    > Node alignment: 98.4%<br>
+                    > Data stream: STABLE<br>
+                    > Detecting external signals...
+                </div>
+            </div>
+
+            <!-- バーチャート -->
+            <div class="data-panel">
+                <div class="data-title">Frequency Analysis</div>
+                <div class="chart-container">
+                    <div class="bar" style="--h: 40%"></div>
+                    <div class="bar" style="--h: 80%"></div>
+                    <div class="bar" style="--h: 60%"></div>
+                    <div class="bar" style="--h: 90%; background: var(--neon-purple)"></div>
+                    <div class="bar" style="--h: 30%"></div>
+                    <div class="bar" style="--h: 70%"></div>
+                    <div class="bar" style="--h: 50%"></div>
+                </div>
+            </div>
+
+            <!-- 円形ゲージ -->
+            <div class="data-panel">
+                <div class="data-title">Core Temp / Load</div>
+                <div class="gauge-container">
+                    <div class="gauge"><span>48%</span></div>
+                    <div class="gauge" style="border-top-color: var(--neon-blue)"><span>82%</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ネットワークグラフのアニメーション描画スクリプト
+        function initNetwork(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            
+            // サイズ調整
+            const resize = () => {
+                canvas.width = canvas.parentElement.offsetWidth;
+                canvas.height = canvas.parentElement.offsetHeight;
+            };
+            window.addEventListener('resize', resize);
+            resize();
+
+            // パーティクル設定
+            const particles = [];
+            const particleCount = 40;
+            
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.vx = (Math.random() - 0.5) * 0.5;
+                    this.vy = (Math.random() - 0.5) * 0.5;
+                    this.size = Math.random() * 2 + 1;
+                    this.color = Math.random() > 0.5 ? '#00f3ff' : '#bc13fe';
+                }
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                    if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                }
+            }
+
+            for(let i=0; i<particleCount; i++) particles.push(new Particle());
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // 線を描画
+                ctx.lineWidth = 0.5;
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update();
+                    particles[i].draw();
+                    
+                    for (let j = i; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const distance = Math.sqrt(dx*dx + dy*dy);
+                        
+                        if (distance < 80) {
+                            ctx.beginPath();
+                            ctx.strokeStyle = `rgba(0, 243, 255, ${1 - distance/80})`;
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        // 左右のパネルで実行
+        initNetwork('canvas-left');
+        initNetwork('canvas-right');
+    </script>
+</body>
+</html>

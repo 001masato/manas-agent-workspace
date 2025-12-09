@@ -13,7 +13,7 @@
 
   body {
     @apply bg-cyber-dark text-white font-mono overflow-hidden;
-    background-image: 
+    background-image:
       linear-gradient(var(--cyber-grid) 1px, transparent 1px),
       linear-gradient(90deg, var(--cyber-grid) 1px, transparent 1px);
     background-size: 40px 40px;
@@ -22,20 +22,55 @@
 
 @layer components {
   .neon-text {
-    @apply text-cyber-cyan drop-shadow-[0_0_5px_rgba(0,243,255,0.8)];
+    text-shadow: 0 0 5px rgba(0, 243, 255, 0.8);
+    color: var(--cyber-cyan);
   }
-  
+
   .neon-border {
-    @apply border border-cyber-cyan shadow-[0_0_10px_rgba(0,243,255,0.3)];
+    border: 1px solid var(--cyber-cyan);
+    box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
   }
 
   .glass-panel {
-    @apply bg-cyber-glass backdrop-blur-md border border-white/10 shadow-xl;
+    background: var(--cyber-glass);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   }
 
   .cyber-button {
-    @apply px-4 py-2 bg-transparent text-cyber-cyan border border-cyber-cyan 
-           hover:bg-cyber-cyan/10 hover:shadow-[0_0_15px_rgba(0,243,255,0.5)] 
-           transition-all duration-300 uppercase tracking-widest font-bold;
+    padding: 0.5rem 1rem;
+    background-color: transparent;
+    color: var(--cyber-cyan);
+    border: 1px solid var(--cyber-cyan);
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: bold;
+    cursor: pointer;
   }
+
+  .cyber-button:hover {
+    background-color: rgba(0, 243, 255, 0.1);
+    box-shadow: 0 0 15px rgba(0, 243, 255, 0.5);
+  }
+}
+
+/* Custom Scrollbar Utility */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--cyber-cyan) var(--cyber-dark);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--cyber-dark);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--cyber-cyan);
+  border-radius: 3px;
 }
