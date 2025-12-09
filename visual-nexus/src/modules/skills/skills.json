@@ -42,11 +42,25 @@
     "path": "E:\\マナス\\.agent\\prompts\\templates\\goal_seek_prompt.md"
   },
   {
+    "id": "kamui-agent",
+    "name": "Kamui (Media Core)",
+    "description": "---...",
+    "category": "template",
+    "path": "E:\\マナス\\.agent\\prompts\\templates\\kamui-agent.md"
+  },
+  {
     "id": "kyotaku_care_plan_prompt",
     "name": "対話型・主任介護支援専門員エージェント（居宅版）",
     "description": "この内容は **システムプロンプト（System Prompt）** として機能します。...",
     "category": "template",
     "path": "E:\\マナス\\.agent\\prompts\\templates\\kyotaku_care_plan_prompt.md"
+  },
+  {
+    "id": "miyabi-agent",
+    "name": "Miyabi (Logic Core)",
+    "description": "---...",
+    "category": "template",
+    "path": "E:\\マナス\\.agent\\prompts\\templates\\miyabi-agent.md"
   },
   {
     "id": "note_writing_prompt",
