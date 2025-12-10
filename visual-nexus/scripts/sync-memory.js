@@ -11,6 +11,23 @@ const __dirname = path.dirname(__filename);
 const MEMORY_FILE_PATH = path.resolve(__dirname, '../../.agent/manas-memory.md');
 const OUTPUT_FILE_PATH = path.resolve(__dirname, '../src/modules/memory/memories.json');
 
+const TAGS_MAP = {
+    'joy': ['happy', 'fun', 'excited', 'good', 'great', 'success'],
+    'achievement': ['completed', 'done', 'finished', 'won', 'deployed', 'shipped'],
+    'learning': ['learned', 'studied', 'read', 'understood', 'found', 'research'],
+    'system': ['update', 'upgrade', 'fix', 'bug', 'error', 'setup', 'config'],
+    'social': ['user', 'friend', 'meet', 'talk', 'discuss']
+};
+
+const determineTags = (content) => {
+    const lower = content.toLowerCase();
+    const tags = new Set();
+    Object.entries(TAGS_MAP).forEach(([tag, keywords]) => {
+        if (keywords.some(k => lower.includes(k))) tags.add(tag);
+    });
+    return Array.from(tags);
+};
+
 console.log(`🔍 Scanning Memory Core at: ${MEMORY_FILE_PATH}`);
 
 try {
@@ -51,13 +68,18 @@ try {
                 }
 
                 const [_, date, title] = dateMatch;
+
+                // Determine tags based on content
+                const tags = determineTags(title + " " + (currentMemory?.context || ""));
+
                 currentMemory = {
                     id: `mem_${date.replace(/-/g, '')}_${Math.random().toString(36).substr(2, 5)}`, // Generate stable-ish ID
                     timestamp: date,
                     title: title.trim(),
-                    type: 'event',
+                    type: tags.includes('system') ? 'system' : 'event',
                     priority: 'high',
-                    context: ''
+                    context: '',
+                    tags: tags // Add tags
                 };
             }
             // Append details to context
@@ -71,6 +93,8 @@ try {
     }
     // Push last memory
     if (currentMemory) {
+        // Determine tags for the last memory
+        currentMemory.tags = determineTags(currentMemory.title, currentMemory.context);
         memories.push(currentMemory);
     }
 

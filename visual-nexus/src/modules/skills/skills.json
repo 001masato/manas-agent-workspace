@@ -14,6 +14,13 @@
     "path": "E:\\マナス\\.agent\\prompts\\templates\\ai-agent-architect.md"
   },
   {
+    "id": "architect-expert",
+    "name": "Identity: The Architect",
+    "description": "---...",
+    "category": "template",
+    "path": "E:\\マナス\\.agent\\prompts\\templates\\architect-expert.md"
+  },
+  {
     "id": "codex_agent_blueprint",
     "name": "Codex Agent Configuration & Blueprint",
     "description": "```toml...",

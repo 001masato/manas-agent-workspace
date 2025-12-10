@@ -1,7 +1,7 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Power, Activity, Shield, Wifi, Command as CommandIcon, Terminal as TerminalIcon, Check } from 'lucide-react';
+import { Power, Activity, Shield, Wifi, Terminal as TerminalIcon, Check } from 'lucide-react';
+import { XPService } from '../gamification/XPService';
 import { CommandService, type Command } from './CommandService';
 
 export const CommandUplink = () => {
@@ -58,7 +58,14 @@ export const CommandUplink = () => {
         addLog(`COMMAND SELECTED: ${cmd.label}`);
         addLog(`> ${cmd.command}`);
         addLog(`SUCCESS: Copied to Clipboard. Ready to execute.`);
-        addLog(`XP GAINED: +${cmd.xpReward} XP`); // Placeholder visual
+
+        // Add XP
+        const { leveledUp, newLevel } = XPService.addXP(cmd.xpReward, `CMD: ${cmd.label}`);
+        if (leveledUp) {
+            addLog(`*** LEVEL UP! SYSTEM UPGRADED TO LEVEL ${newLevel} ***`);
+        } else {
+            addLog(`XP GAINED: +${cmd.xpReward} XP`);
+        }
 
         setTimeout(() => setCopiedId(null), 2000);
     };

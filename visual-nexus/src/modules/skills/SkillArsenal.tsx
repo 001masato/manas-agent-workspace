@@ -1,7 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { SkillService, type Skill } from './SkillService';
+import { XPService } from '../gamification/XPService';
 import { Copy, Terminal, FileText, Cpu, Zap } from 'lucide-react';
 
 interface Props {
@@ -18,7 +18,10 @@ export const SkillArsenal = ({ onActivateCore }: Props) => {
 
     const handleCopy = (path: string) => {
         navigator.clipboard.writeText(path);
-        // In a real app, show a toast here
+        const { leveledUp, newLevel } = XPService.addXP(5, 'COPIED SKILL PATH');
+        if (leveledUp) {
+            window.dispatchEvent(new CustomEvent('level-up', { detail: { level: newLevel } }));
+        }
     };
 
     const getIcon = (category: string) => {
@@ -72,8 +75,8 @@ export const SkillArsenal = ({ onActivateCore }: Props) => {
                                     initial={{ opacity: isCore ? 1 : 0, y: isCore ? 0 : 20 }}
                                     animate={{ opacity: (isCore || hoveredId === skill.id) ? 1 : 0, y: (isCore || hoveredId === skill.id) ? 0 : 20 }}
                                     className={`absolute bottom-0 left-0 right-0 p-4 border-t flex gap-2 justify-end ${isCore
-                                            ? 'bg-yellow-900/90 border-yellow-400/30'
-                                            : 'bg-cyber-dark/95 border-cyber-cyan/30'
+                                        ? 'bg-yellow-900/90 border-yellow-400/30'
+                                        : 'bg-cyber-dark/95 border-cyber-cyan/30'
                                         }`}
                                 >
                                     {isCore && onActivateCore ? (
@@ -81,10 +84,14 @@ export const SkillArsenal = ({ onActivateCore }: Props) => {
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 onActivateCore(skill.name.includes('Kamui') ? 'KAMUI' : 'MIYABI');
+                                                const { leveledUp, newLevel } = XPService.addXP(50, `ACTIVATED CORE: ${skill.name}`);
+                                                if (leveledUp) {
+                                                    window.dispatchEvent(new CustomEvent('level-up', { detail: { level: newLevel } }));
+                                                }
                                             }}
                                             className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm bg-yellow-400 text-black font-black tracking-widest hover:bg-white hover:scale-105 transition-all shadow-[0_0_15px_rgba(250,204,21,0.5)]"
                                         >
-                                            <Zap size={16} fill="currentColor" /> ACTIVATE CORE
+                                            <Zap size={16} fill="currentColor" /> ACTIVATE CORE (+50 XP)
                                         </button>
                                     ) : (
                                         <>
@@ -92,7 +99,7 @@ export const SkillArsenal = ({ onActivateCore }: Props) => {
                                                 onClick={(e) => { e.stopPropagation(); handleCopy(skill.path || ''); }}
                                                 className="flex items-center gap-2 px-3 py-1.5 text-xs bg-cyber-cyan/20 text-cyber-cyan border border-cyber-cyan/50 hover:bg-cyber-cyan hover:text-black transition-colors"
                                             >
-                                                <Copy size={12} /> PATH
+                                                <Copy size={12} /> PATH (+5 XP)
                                             </button>
                                             <button className="flex items-center gap-2 px-3 py-1.5 text-xs bg-cyber-magenta/20 text-cyber-magenta border border-cyber-magenta/50 hover:bg-cyber-magenta hover:text-white transition-colors">
                                                 <Terminal size={12} /> EXECUTE

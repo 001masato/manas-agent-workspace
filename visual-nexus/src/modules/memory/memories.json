@@ -1,26 +1,30 @@
 [
   {
-    "id": "core_20251207",
+    "id": "mem_20251207_8i8pn",
     "timestamp": "2025-12-07",
     "title": "Project GENESIS - SF-style dashboard that brought excitement and wonder",
     "type": "event",
     "priority": "high",
-    "context": "User said: \"今日みたいにワクワクするような提案やアドバイスを今後もよろしくお願いします\" Key success: Combining technical excellence with visual excitement "
+    "context": "\"今日みたいにワクワクするような提案やアドバイスを今後もよろしくお願いします\" Combining technical excellence with visual excitement",
+    "tags": [
+      "achievement"
+    ]
   },
   {
-    "id": "core_20251207",
+    "id": "mem_20251207_two7r",
     "timestamp": "2025-12-07",
     "title": "Project MIRAGE - Implemented \"Neural Map\" visualization to the dashboard.",
     "type": "event",
     "priority": "high",
-    "context": "User said: \"おねがいじっこうして\" (Go ahead and execute) Key success: Transforming static docs into a living interface. "
+    "context": "\"おねがいじっこうして\" (Go ahead and execute) Transforming static docs into a living interface.",
+    "tags": []
   },
   {
-    "id": "topic_0",
-    "timestamp": "2025-12-09",
-    "title": "🌌 Inspiration & Future Hints (ヒントとインスピレーション)",
+    "id": "sys_inspiration_link",
+    "timestamp": "2025-12-10",
+    "title": "🌌 Inspiration & Future Hints",
     "type": "inspiration",
     "priority": "max",
-    "context": "ユーザー（001masato）から提示された、未来への重要なヒントとなるプロジェクト参照情報です。"
+    "context": "User's collection of future concepts and project references."
   }
 ]

@@ -88,9 +88,13 @@ export const SystemDreaming: React.FC = () => {
                     <motion.div
                         key={bubble.id}
                         initial={{ y: '110vh', opacity: 0, x: `${bubble.x}vw` }}
-                        animate={{ y: '-20vh', opacity: [0, 1, 1, 0] }}
+                        animate={{
+                            y: '-20vh',
+                            opacity: [0, 1, 1, 0],
+                            x: [`${bubble.x}vw`, `${bubble.x + (Math.random() * 20 - 10)}vw`]
+                        }}
                         exit={{ opacity: 0 }}
-                        transition={{ duration: bubble.duration, ease: "linear", delay: bubble.delay }}
+                        transition={{ duration: bubble.duration, ease: "easeInOut", delay: bubble.delay }}
                         onAnimationComplete={() => removeBubble(bubble.id)}
                         className={`absolute flex flex-col items-center justify-center p-4 rounded-full border backdrop-blur-sm
                             ${bubble.type === 'synthesis'

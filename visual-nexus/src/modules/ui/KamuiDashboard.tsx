@@ -1,6 +1,7 @@
-
-import { motion } from 'framer-motion';
-import { useEffect, useRef } from 'react';
+// motion removed as it was unused
+import { useEffect, useRef, useState } from 'react';
+import { audioService } from '../media/AudioAnalysisService';
+import { Music, Upload, StopCircle } from 'lucide-react';
 
 interface Props {
     onBack: () => void;
@@ -8,98 +9,157 @@ interface Props {
 
 export const KamuiDashboard = ({ onBack }: Props) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [fileName, setFileName] = useState<string | null>(null);
 
-    // Audio Visualizer Simulation
+    // Initial Resume Context
+    useEffect(() => {
+        const handleInteraction = () => {
+            audioService.resume();
+        };
+        window.addEventListener('click', handleInteraction, { once: true });
+        return () => window.removeEventListener('click', handleInteraction);
+    }, []);
+
+    // Visualizer Loop
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
-        canvas.width = window.innerWidth;
-        canvas.height = 300;
+        let animationId: number;
 
-        const bars = 50;
-        const barWidth = canvas.width / bars;
+        const render = () => {
+            animationId = requestAnimationFrame(render);
 
-        const draw = () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const width = canvas.width = canvas.offsetWidth;
+            const height = canvas.height = canvas.offsetHeight;
+            const data = audioService.getFrequencyData();
 
-            for (let i = 0; i < bars; i++) {
-                const height = Math.random() * canvas.height * 0.8;
-                const hue = Math.random() * 60 + 340; // Red to Orange range
-                ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
-                ctx.fillRect(i * barWidth, canvas.height - height, barWidth - 2, height);
+            ctx.clearRect(0, 0, width, height);
+
+            if (data.length === 0) {
+                // Idle State - Pulsing Line
+                ctx.beginPath();
+                ctx.moveTo(0, height / 2);
+                ctx.strokeStyle = '#ff2a2a';
+                ctx.lineWidth = 2;
+                for (let x = 0; x < width; x += 10) {
+                    ctx.lineTo(x, height / 2 + Math.sin(x * 0.05 + Date.now() * 0.005) * 20);
+                }
+                ctx.stroke();
+                return;
             }
+
+            // Circular Visualizer
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const radius = Math.min(width, height) / 4;
+            const bars = 100;
+            const step = Math.ceil(data.length / bars);
+
+            ctx.beginPath();
+            for (let i = 0; i < bars; i++) {
+                const value = data[i * step];
+                const angle = (i / bars) * Math.PI * 2;
+                const barHeight = (value / 255) * (radius * 1.5);
+
+                const x1 = centerX + Math.cos(angle) * radius;
+                const y1 = centerY + Math.sin(angle) * radius;
+                const x2 = centerX + Math.cos(angle) * (radius + barHeight);
+                const y2 = centerY + Math.sin(angle) * (radius + barHeight);
+
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+            }
+            ctx.strokeStyle = '#ffaa00';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Inner Beat Circle
+            const average = data.reduce((a, b) => a + b, 0) / data.length;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius * 0.8 + (average / 255) * 20, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 0, 0, ${average / 255})`;
+            ctx.fill();
+            ctx.strokeStyle = '#ff2a2a';
+            ctx.stroke();
         };
 
-        const interval = setInterval(draw, 100);
-        return () => clearInterval(interval);
+        render();
+
+        return () => cancelAnimationFrame(animationId);
     }, []);
 
+    const handleFileDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('audio/')) {
+            setFileName(file.name);
+            audioService.loadFile(file).then(() => setIsPlaying(true));
+        }
+    };
+
+    const handleStop = () => {
+        audioService.stop();
+        setIsPlaying(false);
+        setFileName(null);
+    };
+
     return (
-        <div className="w-full h-full bg-[#1a0505] text-[#ff2a2a] relative overflow-hidden flex flex-col">
+        <div
+            className="w-full h-full bg-[#1a0505] text-[#ff2a2a] relative overflow-hidden flex flex-col"
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleFileDrop}
+        >
             {/* Background Gradient */}
             <div className="absolute inset-0 bg-gradient-to-br from-[#ff0000]/10 to-transparent pointer-events-none" />
 
             <header className="p-8 flex justify-between items-center z-10 border-b border-[#ff2a2a]/30">
                 <div className="flex items-center gap-4">
                     <button
-                        onClick={onBack}
+                        onClick={() => { audioService.stop(); onBack(); }}
                         className="text-sm border border-[#ff2a2a] px-4 py-2 hover:bg-[#ff2a2a] hover:text-[#1a0505] transition-colors"
                     >
                         ◀ RETURN TO MANAS
                     </button>
                     <h1 className="text-4xl font-black italic tracking-tighter">KAMUI // VIRAL CORE</h1>
                 </div>
-                <div className="flex gap-8 text-sm font-bold">
-                    <div className="animate-pulse">● LIVE BROADCAST</div>
-                    <div>VIEWERS: 12,403</div>
-                    <div>ENGAGEMENT: 98.2%</div>
+                <div className="flex gap-8 text-sm font-bold items-center">
+                    {fileName && (
+                        <div className="flex items-center gap-2 text-[#ffaa00] animate-pulse">
+                            <Music size={16} /> NOW PLAYING: {fileName}
+                        </div>
+                    )}
+                    {isPlaying && (
+                        <button onClick={handleStop} className="flex items-center gap-2 hover:text-white">
+                            <StopCircle size={20} /> STOP AUDIO
+                        </button>
+                    )}
                 </div>
             </header>
 
-            <div className="flex-1 overflow-y-auto p-8 z-10">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {/* Featured Media */}
-                    <motion.div
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="col-span-2 row-span-2 border-2 border-[#ff2a2a] relative group h-[400px] bg-black/50"
-                    >
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-6xl group-hover:scale-125 transition-transform">▶</span>
-                        </div>
-                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-[#ff2a2a] text-black font-bold">
-                            FEATURED CONTENT: PROJECT TRINITY LAUNCH
-                        </div>
-                    </motion.div>
+            <div className="flex-1 w-full h-full relative flex items-center justify-center">
+                {/* Visualizer Canvas (Full Background) */}
+                <canvas ref={canvasRef} className="absolute inset-0 w-full h-full opacity-80" />
 
-                    {/* Stats Panel */}
-                    <div className="border border-[#ffaa00] p-6 bg-[#ffaa00]/5">
+                {/* Drag Drop Instruction Overlay */}
+                {!isPlaying && (
+                    <div className="z-10 border-2 border-dashed border-[#ff2a2a]/50 p-12 rounded-xl flex flex-col items-center gap-4 text-[#ff2a2a]/50">
+                        <Upload size={48} />
+                        <div className="text-2xl font-black">DROP AUDIO FILE HERE</div>
+                        <div className="text-sm">MP3 / WAV / OGG</div>
+                    </div>
+                )}
+
+                {/* HUD Elements */}
+                <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end pointer-events-none">
+                    <div className="border border-[#ffaa00] p-6 bg-[#ffaa00]/5 backdrop-blur-sm">
                         <h3 className="text-[#ffaa00] font-bold mb-4 text-xl">VIRAL VELOCITY</h3>
-                        <div className="text-6xl font-black mb-2">88.4</div>
-                        <div className="w-full bg-[#330000] h-2">
-                            <div className="bg-[#ffaa00] h-full w-[88%]" />
-                        </div>
-                    </div>
-
-                    {/* Visualizer Panel */}
-                    <div className="col-span-1 border border-[#ff2a2a] relative bg-black/30">
-                        <canvas ref={canvasRef} className="w-full h-full opacity-70" />
-                        <div className="absolute top-2 left-2 text-xs font-bold bg-[#ff2a2a] text-black px-2">AUDIO OUT</div>
-                    </div>
-
-                    {/* Quick Actions */}
-                    <div className="border-t-4 border-[#ff2a2a] bg-[#1a0000] p-6 flex flex-col justify-between">
-                        <h3 className="font-bold mb-4">DEPLOY STRATEGY</h3>
-                        <div className="space-y-4">
-                            <button className="w-full py-3 bg-[#ff2a2a] text-black font-bold hover:bg-white hover:text-black transition-colors">
-                                GENERATE THUMBNAIL
-                            </button>
-                            <button className="w-full py-3 border border-[#ffaa00] text-[#ffaa00] font-bold hover:bg-[#ffaa00] hover:text-black transition-colors">
-                                ANALYZE TRENDS
-                            </button>
+                        <div className="text-6xl font-black mb-2">{isPlaying ? (Math.random() * 10 + 85).toFixed(1) : '0.0'}</div>
+                        <div className="w-64 bg-[#330000] h-2">
+                            <div className="bg-[#ffaa00] h-full transition-all duration-100" style={{ width: isPlaying ? '88%' : '0%' }} />
                         </div>
                     </div>
                 </div>
