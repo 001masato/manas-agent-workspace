@@ -154,7 +154,7 @@ export const CommandUplink = () => {
 
                         <div
                             ref={terminalRef}
-                            className="mt-6 flex-grow overflow-y-auto custom-scrollbar flex flex-col gap-1 pb-4"
+                            className="mt-6 flex-grow overflow-y-auto custom-scrollbar flex flex-col gap-1 px-1"
                         >
                             <AnimatePresence mode="popLayout">
                                 {logs.length === 0 && !isActive && (
@@ -178,17 +178,46 @@ export const CommandUplink = () => {
                                     </motion.div>
                                 ))}
                             </AnimatePresence>
-
-                            {isActive && (
-                                <motion.div
-                                    animate={{ opacity: [0, 1, 0] }}
-                                    transition={{ repeat: Infinity, duration: 0.8 }}
-                                    className="flex items-center gap-2 text-green-500 mt-2"
-                                >
-                                    <span>_</span>
-                                </motion.div>
-                            )}
                         </div>
+
+                        {/* Input Area - Fixed at Bottom */}
+                        {isActive && (
+                            <div className="shrink-0 pt-2 mt-2 border-t border-cyber-cyan/20 flex items-center gap-2 text-green-500 bg-black/50">
+                                <span className="text-cyber-magenta font-bold animate-pulse">{'>_'}</span>
+                                <input
+                                    type="text"
+                                    autoFocus
+                                    className="bg-transparent border-none outline-none text-green-500 font-mono w-full placeholder-green-500/30 h-8"
+                                    placeholder="ENTER COMMAND..."
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            const val = e.currentTarget.value.trim();
+                                            if (val) {
+                                                addLog(val);
+
+                                                // Command Logic
+                                                const lower = val.toLowerCase();
+                                                if (lower.includes('access miyabi') || lower.includes('miyabi')) {
+                                                    addLog('*** INITIATING TRANSFER TO MIYABI CORE ***');
+                                                    window.dispatchEvent(new CustomEvent('activate-core', { detail: { core: 'MIYABI' } }));
+                                                } else if (lower.includes('access kamui') || lower.includes('kamui')) {
+                                                    addLog('*** INITIATING TRANSFER TO KAMUI CORE ***');
+                                                    window.dispatchEvent(new CustomEvent('activate-core', { detail: { core: 'KAMUI' } }));
+                                                } else if (lower.includes('system reboot')) {
+                                                    window.location.reload();
+                                                } else if (lower === 'clear') {
+                                                    setLogs([]);
+                                                } else {
+                                                    setTimeout(() => addLog(`ERROR: UNKNOWN COMMAND PROTOCOL [${val}]`), 500);
+                                                }
+
+                                                e.currentTarget.value = '';
+                                            }
+                                        }
+                                    }}
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
 

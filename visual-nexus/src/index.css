@@ -12,7 +12,7 @@
   }
 
   body {
-    @apply bg-cyber-dark text-white font-mono overflow-hidden;
+    @apply bg-cyber-dark text-white font-mono;
     background-image:
       linear-gradient(var(--cyber-grid) 1px, transparent 1px),
       linear-gradient(90deg, var(--cyber-grid) 1px, transparent 1px);
