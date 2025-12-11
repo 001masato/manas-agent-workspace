@@ -17,6 +17,13 @@ import { ActivityVisualizer } from './modules/ui/ActivityVisualizer';
 import { SystemMonitorWidget } from './modules/ui/SystemMonitorWidget';
 import { audioService } from './modules/core/AudioService';
 import { Volume2, VolumeX } from 'lucide-react';
+import { OverdriveProvider } from './modules/overdrive/OverdriveContext';
+import { PhaseShiftOverlay } from './modules/overdrive/PhaseShiftOverlay';
+import { SyncRateMonitor } from './modules/overdrive/SyncRateMonitor';
+import { SonicVisualizer } from './modules/overdrive/SonicVisualizer';
+import { ClockWidget } from './modules/ui/ClockWidget';
+import { SyncButton } from './modules/system/SyncButton';
+import { BrainLogWidget } from './modules/ui/BrainLogWidget';
 
 type CoreType = 'MANAS' | 'KAMUI' | 'MIYABI';
 
@@ -26,13 +33,7 @@ function App() {
   const [activeCore, setActiveCore] = useState<CoreType>('MANAS');
   const [memories, setMemories] = useState<Memory[]>([]);
 
-  const handleLaunchComplete = () => {
-    setIsLaunched(true);
-    audioService.playActive(); // Play sound on launch
-    setTimeout(() => {
-      audioService.speak("Visual Nexus Online. Welcome back, Architect.");
-    }, 1000);
-  };
+
 
   const toggleMute = () => {
     audioService.toggleMute();
@@ -62,7 +63,45 @@ function App() {
     };
     window.addEventListener('activate-core', handleCoreActivation as EventListener);
     return () => window.removeEventListener('activate-core', handleCoreActivation as EventListener);
+    return () => window.removeEventListener('activate-core', handleCoreActivation as EventListener);
   }, []);
+
+  return (
+    <OverdriveProvider>
+      <AppContent
+        isLaunched={isLaunched}
+        setIsLaunched={setIsLaunched}
+        isMuted={isMuted}
+        toggleMute={toggleMute}
+        activeCore={activeCore}
+        setActiveCore={setActiveCore}
+        memories={memories}
+      />
+    </OverdriveProvider>
+  );
+}
+
+// Extracted for cleaner Context usage if needed, though mostly visual components use it directly.
+// But we need OverdriveProvider to wrap everything, including the UI components that use useOverdrive.
+function AppContent({
+  isLaunched, setIsLaunched, isMuted, toggleMute, activeCore, setActiveCore, memories
+}: {
+  isLaunched: boolean;
+  setIsLaunched: (v: boolean) => void;
+  isMuted: boolean;
+  toggleMute: () => void;
+  activeCore: CoreType;
+  setActiveCore: (c: CoreType) => void;
+  memories: Memory[];
+}) {
+
+  const handleLaunchComplete = () => {
+    setIsLaunched(true);
+    audioService.playActive(); // Play sound on launch
+    setTimeout(() => {
+      audioService.speak("Visual Nexus Online. Welcome back, Architect.");
+    }, 1000);
+  };
 
   return (
     <div className="min-h-screen bg-black text-white font-sans overflow-y-auto overflow-x-hidden relative selection:bg-cyber-magenta/30">
@@ -86,7 +125,7 @@ function App() {
       {/* Startup Sequence */}
       <AnimatePresence>
         {!isLaunched && (
-          <GreetingOverlay onComplete={() => setIsLaunched(true)} />
+          <GreetingOverlay onComplete={handleLaunchComplete} />
         )}
       </AnimatePresence>
 
@@ -150,7 +189,10 @@ function App() {
                   <h2 className="text-3xl font-bold neon-text">COCKPIT ACTIVE</h2>
                   <p className="text-sm text-cyber-cyan/50 tracking-widest">UNIT: MANAS-01 // STATUS: GREEN</p>
                 </div>
-                {/* XP display moved to LevelBadge, but considering keeping a header summary or handled by LevelBadge */}
+                <div className="hidden lg:flex items-center gap-4">
+                  <SyncButton />
+                  <ClockWidget />
+                </div>
               </header>
 
 
@@ -178,10 +220,8 @@ function App() {
                       <SystemMonitorWidget />
                     </div>
                     <div className="grow">
-                      {/* Potentially another widget or expand ActivityVisualizer here? 
-                               Let's actually put ActivityVisualizer here for more width 
-                           */}
-                      <ActivityVisualizer />
+                      {/* Replaced ActivityVisualizer with BrainLog for more utility, moving ActivityVisualizer elsewhere or stacking */}
+                      <BrainLogWidget />
                     </div>
                   </div>
                 </div>
@@ -202,6 +242,10 @@ function App() {
           </motion.div>
         )}
       </AnimatePresence>
+      <PhaseShiftOverlay />
+      <SonicVisualizer />
+      {isLaunched && <SyncRateMonitor />}
+
     </div>
   );
 }
