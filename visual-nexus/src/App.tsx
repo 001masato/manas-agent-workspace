@@ -210,7 +210,7 @@ function AppContent({
                 {/* Right Column: Skills (5/12) + Calendar (2/12) ?? No, let's keep 2 columns but split */}
                 <div className="col-span-12 lg:col-span-7 flex flex-col gap-4">
                   <div>
-                    <SkillArsenal onActivateCore={(core) => setActiveCore(core as CoreType)} />
+                    <SkillArsenal />
                   </div>
                   <div className="flex gap-4 h-48 hidden lg:flex">
                     <div className="w-64 shrink-0">

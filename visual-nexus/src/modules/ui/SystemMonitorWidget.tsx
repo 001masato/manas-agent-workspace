@@ -20,7 +20,11 @@ export const SystemMonitorWidget = () => {
         setLastCheck(new Date().toLocaleTimeString());
     };
 
-    // ... useEffect ...
+    useEffect(() => {
+        checkStatus();
+        const interval = setInterval(checkStatus, 5000);
+        return () => clearInterval(interval);
+    }, []);
 
     return (
         <div

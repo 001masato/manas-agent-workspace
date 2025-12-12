@@ -1,5 +1,6 @@
 
 import { Terminal, Github, Play, RefreshCw, Save } from 'lucide-react';
+import { jobManager } from '../core/JobManager';
 
 export interface Command {
     id: string;
@@ -8,6 +9,7 @@ export interface Command {
     icon: any;
     xpReward: number;
     category: 'system' | 'git' | 'workflow';
+    action?: () => Promise<any>;
 }
 
 export const CommandService = {
@@ -50,7 +52,14 @@ export const CommandService = {
             command: 'npm run memory:sync',
             icon: Terminal,
             xpReward: 15,
-            category: 'workflow'
+            category: 'workflow',
+            action: async () => {
+                return jobManager.runJob('Memory Sync Protocol', async () => {
+                    const res = await fetch('http://localhost:5174/api/sync', { method: 'POST' });
+                    if (!res.ok) throw new Error('Bridge connection failed');
+                    return await res.json();
+                });
+            }
         },
         {
             id: 'skills_sync',
@@ -58,7 +67,14 @@ export const CommandService = {
             command: 'npm run skills:sync',
             icon: Terminal,
             xpReward: 15,
-            category: 'workflow'
+            category: 'workflow',
+            action: async () => {
+                return jobManager.runJob('Skill Indexing', async () => {
+                    // In a real app we might call an API. Here we simulate the delay.
+                    await new Promise(r => setTimeout(r, 1500));
+                    return { message: 'Use terminal to run: npm run skills:sync' };
+                });
+            }
         }
     ],
 
@@ -66,5 +82,12 @@ export const CommandService = {
     calculateXp: (commandId: string): number => {
         const cmd = CommandService.getCommands().find(c => c.id === commandId);
         return cmd ? cmd.xpReward : 0;
+    },
+
+    execute: async (cmd: Command) => {
+        if (cmd.action) {
+            return cmd.action();
+        }
+        return null;
     }
 };

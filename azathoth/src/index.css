@@ -1,0 +1,351 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;900&family=Michroma&family=Noto+Serif+JP:wght@900&family=Share+Tech+Mono&display=swap');
+
+:root {
+  --void-black: #000000;
+  --event-horizon: #1a0033;
+  --accretion-disk: #bf00ff;
+  /* 虚空の紫 */
+  --starlight: #ffffff;
+  --gold-accent: #ffd700;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--void-black);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Michroma', sans-serif;
+  color: white;
+  user-select: none;
+}
+
+/* --- 1. Canvas背景 (星空・ワープ) --- */
+#starfield {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+/* --- 2. 空間歪曲ビネット --- */
+.gravity-well {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, transparent 20%, #000 90%);
+  z-index: 1;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+/* --- 3. UIオーバーレイ (警告表示) --- */
+.ui-layer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 20;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.warning-bar {
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, red, transparent);
+  opacity: 0;
+}
+
+.sys-msg {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 14px;
+  color: rgba(255, 0, 0, 0.8);
+  text-shadow: 0 0 5px red;
+  opacity: 0.7;
+}
+
+/* --- 4. メインステージ --- */
+.singularity-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform-style: preserve-3d;
+  perspective: 1200px;
+  z-index: 10;
+}
+
+/* --- 5. 魔法陣リング --- */
+.rings-group {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  transition: transform 0.2s cubic-bezier(0.1, 0.7, 1.0, 0.1);
+  /* Parallax via margin to avoid conflict with JS scale/rotate transform */
+  margin-left: var(--parallax-x, 0px);
+  margin-top: var(--parallax-y, 0px);
+}
+
+/* リング共通 */
+.ring {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 20px var(--accretion-disk);
+}
+
+/* SVGテキスト */
+text {
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  fill: #fff;
+  text-shadow: 0 0 8px var(--accretion-disk);
+  letter-spacing: 0.15em;
+}
+
+.ring-outer {
+  width: 90vmin;
+  height: 90vmin;
+  animation: spin 120s linear infinite;
+}
+
+.ring-mid {
+  width: 65vmin;
+  height: 65vmin;
+  border: 2px dashed rgba(191, 0, 255, 0.3);
+  animation: spin 60s linear infinite reverse;
+}
+
+.ring-inner {
+  width: 45vmin;
+  height: 45vmin;
+  animation: spin 30s linear infinite;
+}
+
+/* --- 6. ブラックホール・コア --- */
+.black-hole-core {
+  position: relative;
+  width: 30vmin;
+  height: 30vmin;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 50;
+  cursor: pointer;
+  /* クリック可能であることを示す */
+}
+
+/* 事象の地平線 (黒い球体) */
+.event-horizon {
+  position: absolute;
+  width: 22vmin;
+  height: 22vmin;
+  border-radius: 50%;
+  background: black;
+  box-shadow:
+    0 0 10px #000,
+    0 0 30px var(--accretion-disk),
+    /* 紫の光彩 */
+    0 0 80px var(--accretion-disk),
+    inset 0 0 40px #000;
+  z-index: 5;
+  animation: breathe 4s ease-in-out infinite;
+}
+
+/* 降着円盤 (光る輪) */
+.accretion-disk {
+  position: absolute;
+  width: 32vmin;
+  height: 32vmin;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg,
+      transparent 0%,
+      var(--accretion-disk) 10%,
+      white 20%,
+      transparent 30%,
+      transparent 100%);
+  filter: blur(8px);
+  animation: spin-disk 2s linear infinite;
+  mix-blend-mode: screen;
+  opacity: 0.8;
+  z-index: 4;
+}
+
+.accretion-disk::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: conic-gradient(from 180deg, transparent 0%, #00ffff 10%, transparent 20%);
+  animation: spin-disk 3s linear infinite reverse;
+}
+
+/* テキスト情報 */
+.core-text {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  pointer-events: none;
+  mix-blend-mode: difference;
+  /* 背景が黒でも白でも見えるように */
+}
+
+.title-sub {
+  font-size: 1.5vmin;
+  letter-spacing: 0.5em;
+  color: #aaa;
+  margin-bottom: 0.5vmin;
+}
+
+.title-main {
+  font-family: 'Cinzel', serif;
+  font-size: 8vmin;
+  line-height: 1;
+  font-weight: 900;
+  color: white;
+  text-shadow: 0 0 10px white, 0 0 20px purple;
+}
+
+.title-jp {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 4vmin;
+  letter-spacing: 0.2em;
+  background: linear-gradient(90deg, #fff, #a0a, #fff);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-top: -1vmin;
+}
+
+.click-hint {
+  margin-top: 2vmin;
+  font-size: 1.2vmin;
+  color: cyan;
+  animation: blink 1s infinite;
+  letter-spacing: 0.1em;
+}
+
+/* --- エフェクトアニメーション --- */
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin-disk {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes breathe {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes blink {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+}
+
+/* ワープ時の振動 */
+.shaking {
+  animation: shake 0.1s infinite;
+}
+
+@keyframes shake {
+  0% {
+    transform: translate(1px, 1px) rotate(0deg);
+  }
+
+  10% {
+    transform: translate(-1px, -2px) rotate(-1deg);
+  }
+
+  20% {
+    transform: translate(-3px, 0px) rotate(1deg);
+  }
+
+  30% {
+    transform: translate(3px, 2px) rotate(0deg);
+  }
+
+  40% {
+    transform: translate(1px, -1px) rotate(1deg);
+  }
+
+  50% {
+    transform: translate(-1px, 2px) rotate(-1deg);
+  }
+
+  60% {
+    transform: translate(-3px, 1px) rotate(0deg);
+  }
+
+  70% {
+    transform: translate(3px, 1px) rotate(-1deg);
+  }
+
+  80% {
+    transform: translate(-1px, -1px) rotate(1deg);
+  }
+
+  90% {
+    transform: translate(1px, 2px) rotate(0deg);
+  }
+
+  100% {
+    transform: translate(1px, -2px) rotate(-1deg);
+  }
+}
+
+/* ホワイトアウト（爆発） */
+.whiteout {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: white;
+  z-index: 999;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.1s;
+}

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { XPService, type XPData } from './XPService';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Star } from 'lucide-react';
 
 export const LevelBadge = () => {
     const [data, setData] = useState<XPData>(XPService.getData());

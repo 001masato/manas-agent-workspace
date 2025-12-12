@@ -21,7 +21,8 @@ export const ThoughtStream = () => {
     return (
         <div className="fixed top-24 right-8 w-80 font-mono text-xs z-30 pointer-events-none">
             <div className="flex items-center gap-2 text-cyber-cyan/50 mb-2 border-b border-cyber-cyan/20 pb-1">
-                <Cpu size={14} className="animate-pulse" />
+                <Activity size={14} className="text-cyber-magenta animate-pulse" />
+                <Cpu size={14} />
                 <span className="tracking-widest">NEURAL STREAM</span>
             </div>
 

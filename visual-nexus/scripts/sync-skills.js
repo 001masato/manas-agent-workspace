@@ -6,63 +6,85 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Configuration
-// relative to visual-nexus/scripts/sync-skills.js
-const PROMPTS_ROOT = path.resolve(__dirname, '../../.agent/prompts');
-const TEMPLATES_DIR = path.join(PROMPTS_ROOT, 'templates');
-const OUTPUT_FILE_PATH = path.resolve(__dirname, '../src/modules/skills/skills.json');
+// CONFIGURATION
+const PROMPTS_DIR = path.resolve(__dirname, '../../.agent/prompts');
+const OUTPUT_FILE = path.resolve(__dirname, '../public/data/skills.json');
 
-console.log(`🔍 Scanning Skills at: ${PROMPTS_ROOT}`);
+console.log(`🚀 Skill Arsenal: Indexing Protocol Initiated...`);
+console.log(`   Source: ${PROMPTS_DIR}`);
 
-const skills = [];
+const getAllFiles = (dirPath, arrayOfFiles) => {
+    const files = fs.readdirSync(dirPath);
+    arrayOfFiles = arrayOfFiles || [];
 
-function parseFile(filePath, category) {
-    try {
+    files.forEach(function (file) {
+        if (fs.statSync(dirPath + "/" + file).isDirectory()) {
+            arrayOfFiles = getAllFiles(dirPath + "/" + file, arrayOfFiles);
+        } else {
+            if (file.endsWith('.md')) {
+                arrayOfFiles.push(path.join(dirPath, "/", file));
+            }
+        }
+    });
+    return arrayOfFiles;
+};
+
+try {
+    if (!fs.existsSync(PROMPTS_DIR)) {
+        console.error(`❌ Error: Prompts directory not found at ${PROMPTS_DIR}`);
+        process.exit(1);
+    }
+
+    const files = getAllFiles(PROMPTS_DIR);
+    console.log(`   Found ${files.length} potential skill modules.`);
+
+    const skills = files.map((filePath, index) => {
         const content = fs.readFileSync(filePath, 'utf-8');
-        const filename = path.basename(filePath, '.md');
+        const relativePath = path.relative(PROMPTS_DIR, filePath).replace(/\\/g, '/');
+        const filename = path.basename(filePath);
 
-        // Simple title extraction (First H1 or Filename)
-        const titleMatch = content.match(/^#\s+(.+)$/m);
-        const title = titleMatch ? titleMatch[1] : filename.replace(/_/g, ' ').replace(/-/g, ' ');
+        // Simple Metadata Extraction
+        // default title is filename without extension
+        let title = filename.replace('.md', '');
+        let description = 'No description available.';
+        let tags = ['general'];
 
-        // Description extraction (First paragraph after title, or generic)
-        const descMatch = content.match(/^(?!#)(.+)$/m);
-        const description = descMatch ? descMatch[1].slice(0, 100) + '...' : 'Available prompt template.';
+        // Try to infer tags from folder structure
+        const folders = relativePath.split('/');
+        if (folders.length > 1) {
+            tags.push(folders[0]); // e.g. 'templates' or 'system'
+        }
+
+        // Try to read frontmatter or first line for title
+        const lines = content.split('\n');
+        if (lines[0].startsWith('# ')) {
+            title = lines[0].replace('# ', '').trim();
+        }
 
         return {
-            id: filename,
-            name: title,
+            id: `skill_${index}_${Math.random().toString(36).substr(2, 5)}`,
+            title: title,
+            file: filename,
+            path: relativePath, // logical path for display
+            fullPath: filePath,
             description: description,
-            category: category,
-            path: filePath // storing absolute path for reference, but UI might not need it
+            tags: tags,
+            content: content // Include content for copy function
         };
-    } catch (e) {
-        console.warn(`Skipping ${filePath}:`, e.message);
-        return null;
+    });
+
+    const outputDir = path.dirname(OUTPUT_FILE);
+    if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir, { recursive: true });
     }
+
+    fs.writeFileSync(OUTPUT_FILE, JSON.stringify(skills, null, 2));
+
+    console.log(`✅ Indexing Complete.`);
+    console.log(`   - Generated ${skills.length} skill cards.`);
+    console.log(`   - Output: ${OUTPUT_FILE}`);
+
+} catch (error) {
+    console.error('❌ Skill Indexing Failed:', error);
+    process.exit(1);
 }
-
-// 1. Scan Templates
-if (fs.existsSync(TEMPLATES_DIR)) {
-    const files = fs.readdirSync(TEMPLATES_DIR).filter(f => f.endsWith('.md'));
-    files.forEach(f => {
-        const skill = parseFile(path.join(TEMPLATES_DIR, f), 'template');
-        if (skill) skills.push(skill);
-    });
-}
-
-// 2. Scan Root Prompts (excluding README)
-if (fs.existsSync(PROMPTS_ROOT)) {
-    const files = fs.readdirSync(PROMPTS_ROOT).filter(f => f.endsWith('.md') && !f.toLowerCase().includes('readme'));
-    files.forEach(f => {
-        const skill = parseFile(path.join(PROMPTS_ROOT, f), 'workflow');
-        if (skill) skills.push(skill);
-    });
-}
-
-// Write to JSON
-fs.writeFileSync(OUTPUT_FILE_PATH, JSON.stringify(skills, null, 2), 'utf-8');
-
-console.log(`✅ Skill Synchronization Complete!`);
-console.log(`   - Index ${skills.length} skills`);
-console.log(`   - Wrote to ${OUTPUT_FILE_PATH}`);

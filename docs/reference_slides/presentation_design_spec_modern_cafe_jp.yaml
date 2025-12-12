@@ -1,0 +1,94 @@
+name: "Modern Cafe Style"
+version: "1.0"
+description: "温かみと知的さを兼ね備えた、モダンなカフェスタイルのデザイン仕様"
+tags:
+  - "Cafe"
+  - "Warm"
+  - "Organic"
+  - "Relaxed"
+  - "Stylish"
+
+theme:
+  mood: "Cozy & Sophisticated"
+  keywords: ["Natural", "Organic", "Warmth", "Coffee", "Minimalist"]
+
+color_palette:
+  primary:
+    hex: "#4B3621"  # Cafe Noir (Dark Coffee) - Main Text / Strong Accents
+    name: "Espresso"
+  secondary:
+    hex: "#D2691E"  # Chocolate / Cinnamon - Secondary Accents
+    name: "Cinnamon"
+  tertiary:
+    hex: "#8FBC8F"  # Dark Sea Green - Organic touches
+    name: "Sage"
+  background:
+    hex: "#FAF7F2"  # Very Light Cream/Beige - Slide Background
+    name: "Milk Foam"
+  surface:
+    hex: "#FFFFFF"  # White - Cards / content areas
+    name: "White Ceramic"
+  text:
+    primary: "#3E2723"
+    secondary: "#5D4037"
+    light: "#FAF7F2" # Text on dark backgrounds
+
+typography:
+  font_family:
+    headings: "Playfair Display" # Elegant Serif for Titles
+    body: "Lato"                 # Clean Sans for readability
+    code: "Consolas"
+  
+  sizes:
+    title: 36
+    subtitle: 24
+    heading_1: 28
+    heading_2: 22
+    heading_3: 18
+    body: 12
+    caption: 10
+
+layout:
+  margin:
+    top: 30
+    bottom: 30
+    left: 40
+    right: 40
+  grid_columns: 12
+  gutter: 15
+
+elements:
+  shapes:
+    border_radius: 8  # Soft rounded corners
+    border_width: 1
+    border_color: "#E0D6CC" # Latte color
+  
+  shadows:
+    card: "0px 2px 4px rgba(75, 54, 33, 0.1)" # Soft brown shadow
+
+components:
+  title_slide:
+    background_color: "#FAF7F2"
+    title_color: "#4B3621"
+    subtitle_color: "#D2691E"
+    layout: "centered" # or "split_image_right"
+  
+  content_slide:
+    background_color: "#FAF7F2"
+    title_color: "#4B3621"
+    body_color: "#3E2723"
+  
+  section_header:
+    background_color: "#4B3621"
+    text_color: "#FAF7F2"
+    accent_bar: "#D2691E"
+
+chart_styles:
+  colors:
+    - "#4B3621" # Espresso
+    - "#D2691E" # Cinnamon
+    - "#8FBC8F" # Sage
+    - "#D2B48C" # Tan
+    - "#A0522D" # Sienna
+  background_color: "#FFFFFF"
+  font_family: "Lato"

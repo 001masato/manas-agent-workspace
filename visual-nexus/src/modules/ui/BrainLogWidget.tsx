@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Brain, FileDigit } from 'lucide-react';
+import { Brain } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 export const BrainLogWidget = () => {

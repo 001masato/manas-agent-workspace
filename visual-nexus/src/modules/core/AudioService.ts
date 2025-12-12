@@ -130,18 +130,74 @@ class AudioService {
             utterance.pitch = 1.0;
 
             // Try to find a diverse or sci-fi sounding voice if available
-            // Prefer Google US English or Microsoft Zira for "AI" feel
+            // QUALITY FIRST: Prioritize Neural/Natural Voices and Female voices
+            // User Request: "女性の声だよ" (It's a female voice)
             const voices = window.speechSynthesis.getVoices();
+            console.log("Available voices:", voices.map(v => v.name));
+
             const preferredVoice = voices.find(v =>
-                v.name.includes('Zira') ||
-                v.name.includes('Google US English') ||
-                v.lang === 'en-US'
+                // 1. Google 日本語 (Usually female sounding high quality)
+                v.name === 'Google 日本語' ||
+                // 2. Microsoft Nanami (Female)
+                v.name.includes('Nanami') ||
+                // 3. Microsoft Haruka (Female)
+                v.name.includes('Haruka') ||
+                // 4. Any voice with "Female" or "Woman" in name if available
+                v.name.toLowerCase().includes('female') ||
+                // 5. Kyoko (Mac)
+                v.name.includes('Kyoko')
             );
 
-            if (preferredVoice) utterance.voice = preferredVoice;
+            // Fallback to any Japanese voice
+            const fallbackJpVoice = voices.find(v => v.lang === 'ja-JP');
+            // Fallback to English female
+            const fallbackEnVoice = voices.find(v => v.lang === 'en-US' && (v.name.includes('Zira') || v.name.includes('Female')));
+
+            if (preferredVoice) {
+                utterance.voice = preferredVoice;
+                utterance.pitch = 1.0;
+                utterance.rate = 1.0;
+            } else if (fallbackJpVoice) {
+                utterance.voice = fallbackJpVoice;
+                // Synthetically raise pitch if we can't confirm it's female, hoping it sounds lighter
+                utterance.pitch = 1.2;
+            } else if (fallbackEnVoice) {
+                utterance.voice = fallbackEnVoice;
+            }
 
             window.speechSynthesis.speak(utterance);
         }
+    }
+
+    private playTone(freq: number, type: OscillatorType, duration: number) {
+        if (this.isMuted) return;
+        this.init();
+        if (!this.ctx || !this.masterGain) return;
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+
+        gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+
+        osc.start();
+        osc.stop(this.ctx.currentTime + duration);
+    }
+
+    public playSuccess() {
+        this.playTone(880, 'sine', 0.1);
+        setTimeout(() => this.playTone(1760, 'sine', 0.2), 100);
+    }
+
+    public playError() {
+        this.playTone(150, 'sawtooth', 0.3);
+        setTimeout(() => this.playTone(100, 'sawtooth', 0.4), 150);
     }
 }
 

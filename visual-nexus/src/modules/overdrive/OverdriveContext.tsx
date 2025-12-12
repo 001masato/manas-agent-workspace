@@ -16,7 +16,7 @@ const OverdriveContext = createContext<OverdriveContextType | undefined>(undefin
 export const OverdriveProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [syncRate, setSyncRate] = useState(0);
     const [audioData, setAudioData] = useState<Uint8Array>(new Uint8Array(0));
-    const rafRef = useRef<number>();
+    const rafRef = useRef<number | null>(null);
 
     // Phase calculation
     const phase: OverdrivePhase = syncRate > 80 ? 'OVERDRIVE' : syncRate > 40 ? 'ACTIVE' : 'NORMAL';
