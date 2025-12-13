@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 interface ConversationOverlayProps {
     text: string;
@@ -8,68 +8,107 @@ export const ConversationOverlay: React.FC<ConversationOverlayProps> = ({ text }
     const [displayedText, setDisplayedText] = useState('');
     const [isVisible, setIsVisible] = useState(false);
 
+    // Charset for decoding effect
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789アァカサタナハマヤャラワガザダバパイィキシチニヒミリギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン";
+
     useEffect(() => {
-        if (text) {
-            setIsVisible(true);
-            setDisplayedText('');
-
-            // Typewriter effect
-            let i = 0;
-            const timer = setInterval(() => {
-                setDisplayedText(text.substring(0, i + 1));
-                i++;
-                if (i === text.length) clearInterval(timer);
-            }, 50); // Speed of typing
-
-            // Auto-hide after some time (optional, but good for cleanliness)
-            const hideTimer = setTimeout(() => {
-                setIsVisible(false);
-            }, Math.max(3000, text.length * 100 + 2000)); // Dynamic duration
-
-            return () => {
-                clearInterval(timer);
-                clearTimeout(hideTimer);
-            };
-        } else {
+        if (!text) {
             setIsVisible(false);
+            return;
         }
+
+        setIsVisible(true);
+        let iteration = 0;
+        let finalOutput = "";
+
+        const interval = setInterval(() => {
+            setDisplayedText(prev => {
+                return text
+                    .split("")
+                    .map((char, index) => {
+                        if (index < iteration) {
+                            return text[index];
+                        }
+                        return chars[Math.floor(Math.random() * chars.length)];
+                    })
+                    .join("");
+            });
+
+            if (iteration >= text.length) {
+                clearInterval(interval);
+            }
+
+            iteration += 1 / 3; // Slow down the reveal
+        }, 30);
+
+        // Auto hide
+        const hideTimer = setTimeout(() => {
+            setIsVisible(false);
+        }, Math.max(4000, text.length * 200 + 2000));
+
+        return () => {
+            clearInterval(interval);
+            clearTimeout(hideTimer);
+        };
     }, [text]);
 
     return (
         <div
             style={{
                 position: 'absolute',
-                bottom: '10%',
+                bottom: '15%',
                 left: '50%',
                 transform: 'translateX(-50%)',
-                width: '80%',
+                width: '90%',
                 textAlign: 'center',
                 pointerEvents: 'none',
                 opacity: isVisible ? 1 : 0,
-                transition: 'opacity 0.5s ease-in-out',
+                transition: 'opacity 0.5s ease',
                 zIndex: 100,
-                textShadow: '0 0 10px rgba(0,0,0,0.8), 0 0 20px black'
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center'
             }}
         >
             <div style={{
+                fontFamily: '"Share Tech Mono", monospace',
+                fontSize: '0.8rem',
+                color: 'cyan',
+                letterSpacing: '0.3em',
+                marginBottom: '8px',
+                opacity: 0.8,
+                textTransform: 'uppercase'
+            }}>
+                Incoming Message // MANAS_SYSTEM
+            </div>
+
+            <div style={{
                 fontFamily: '"Noto Serif JP", serif',
-                fontSize: '2rem',
+                fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
                 fontWeight: 900,
                 color: '#fff',
-                background: 'linear-gradient(to right, #fff, #bbf, #fff)',
+                textShadow: '0 0 10px rgba(191,0,255,0.8), 0 0 20px rgba(0,0,0,1)',
+                background: 'linear-gradient(to bottom, #ffffff, #e0c0ff)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 letterSpacing: '0.1em',
-                lineHeight: '1.5'
+                lineHeight: '1.4',
+                padding: '10px 20px',
+                background: 'rgba(0,0,0,0.3)',
+                backdropFilter: 'blur(4px)',
+                borderRadius: '4px',
+                border: '1px solid rgba(255,255,255,0.1)'
             }}>
                 {displayedText}
-                <span className="cursor" style={{ opacity: 0.5 }}>_</span>
             </div>
+
             <div style={{
-                marginTop: '10px',
-                height: '1px',
-                width: '100%',
-                background: 'linear-gradient(90deg, transparent, rgba(191,0,255,0.5), transparent)'
+                marginTop: '5px',
+                height: '2px',
+                width: isVisible ? '60%' : '0%',
+                background: 'linear-gradient(90deg, transparent, #bf00ff, transparent)',
+                transition: 'width 1s cubic-bezier(0.22, 1, 0.36, 1)',
+                boxShadow: '0 0 10px #bf00ff'
             }}></div>
         </div>
     );

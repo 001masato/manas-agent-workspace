@@ -5,6 +5,33 @@ import { ConversationOverlay } from './components/ConversationOverlay';
 import { audioService } from './services/AudioService';
 import './App.css';
 
+// Random Line Selector
+const getRandomLine = (lines: string[]) => lines[Math.floor(Math.random() * lines.length)];
+
+// Voice Lines Database
+const LINES = {
+  GREETING: [
+    "マナス、システム接続完了。貴方の意思のままに。",
+    "Void Link Established. マナス、スタンバイ。",
+    "マスター、準備は整いました。特異点の制御権を譲渡します。",
+    "アザトースシステム、オンライン。いつでも発動可能です。"
+  ],
+  WARP_START: [
+    "時空ワープ、起動。特異点へ突入します。",
+    "事象の地平線を超えます。衝撃に備えてください。",
+    "全リミッター解除。神域へ。",
+    "Warp Drive Active. 加速します。",
+    "虚空の深淵へダイブします。"
+  ],
+  WARP_END: [
+    "座標到達。通常空間へ復帰。",
+    "ワープ終了。安定領域に入りました。",
+    "現実空間への再構成完了。",
+    "おかえりなさいませ、マスター。",
+    "エネルギー充填完了。次の指示を。"
+  ]
+};
+
 function App() {
   const [isWarping, setIsWarping] = useState(false);
   const [whiteout, setWhiteout] = useState(false);
@@ -18,11 +45,8 @@ function App() {
 
   // Initialization: Voice Greeting
   useEffect(() => {
-    // Attempt to speak on load. Note: Browsers block auto-play audio without interaction.
-    // However, if the user "called Manas", they might have interacted with the page or we hope for the best.
-    // We will try.
     const timer = setTimeout(() => {
-      speak("マナス、システム接続完了。貴方の意思のままに。");
+      speak(getRandomLine(LINES.GREETING));
     }, 1000);
     return () => clearTimeout(timer);
   }, [speak]);
@@ -30,7 +54,7 @@ function App() {
   // Handle Global Mouse Interaction
   const handleMouseDown = () => {
     setIsWarping(true);
-    speak("時空ワープ、起動。特異点へ突入します。");
+    speak(getRandomLine(LINES.WARP_START));
   };
 
   const handleMouseUp = () => {
@@ -38,7 +62,7 @@ function App() {
       setIsWarping(false);
       // Trigger whiteout explosion
       setWhiteout(true);
-      speak("座標到達。通常空間へ復帰。");
+      speak(getRandomLine(LINES.WARP_END));
       setTimeout(() => setWhiteout(false), 300);
     }
   };
