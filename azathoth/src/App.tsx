@@ -1,15 +1,36 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Starfield } from './components/Starfield';
 import { SingularityCore } from './components/SingularityCore';
+import { ConversationOverlay } from './components/ConversationOverlay';
+import { audioService } from './services/AudioService';
 import './App.css';
 
 function App() {
   const [isWarping, setIsWarping] = useState(false);
   const [whiteout, setWhiteout] = useState(false);
+  const [conversationText, setConversationText] = useState('');
+
+  // Helper to speak and show text
+  const speak = useCallback((text: string) => {
+    setConversationText(text);
+    audioService.speak(text);
+  }, []);
+
+  // Initialization: Voice Greeting
+  useEffect(() => {
+    // Attempt to speak on load. Note: Browsers block auto-play audio without interaction.
+    // However, if the user "called Manas", they might have interacted with the page or we hope for the best.
+    // We will try.
+    const timer = setTimeout(() => {
+      speak("マナス、システム接続完了。貴方の意思のままに。");
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [speak]);
 
   // Handle Global Mouse Interaction
   const handleMouseDown = () => {
     setIsWarping(true);
+    speak("時空ワープ、起動。特異点へ突入します。");
   };
 
   const handleMouseUp = () => {
@@ -17,11 +38,12 @@ function App() {
       setIsWarping(false);
       // Trigger whiteout explosion
       setWhiteout(true);
+      speak("座標到達。通常空間へ復帰。");
       setTimeout(() => setWhiteout(false), 300);
     }
   };
 
-  // Bind to window/document to ensure we catch it even if mouse leaves elements
+  // Bind to window/document
   useEffect(() => {
     window.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mouseup', handleMouseUp);
@@ -29,7 +51,7 @@ function App() {
       window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isWarping]);
+  }, [isWarping, speak]);
 
   return (
     <>
@@ -64,6 +86,9 @@ function App() {
 
       {/* 5. Main Stage (Singularity) */}
       <SingularityCore isWarping={isWarping} />
+
+      {/* 6. Conversation Overlay */}
+      <ConversationOverlay text={conversationText} />
     </>
   );
 }

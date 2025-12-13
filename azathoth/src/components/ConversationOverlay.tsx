@@ -1,46 +1,76 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
-const ConversationOverlay: React.FC = () => {
-    const [manasMessage, setManasMessage] = useState<string>("");
-    // Placeholder for future interactivity
-    // const [isListening, setIsListening] = useState(false);
+interface ConversationOverlayProps {
+    text: string;
+}
+
+export const ConversationOverlay: React.FC<ConversationOverlayProps> = ({ text }) => {
+    const [displayedText, setDisplayedText] = useState('');
+    const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
-        setTimeout(() => {
-            setManasMessage("我は潜む...何かを望むか？");
-        }, 1000);
-    }, []);
+        if (text) {
+            setIsVisible(true);
+            setDisplayedText('');
+
+            // Typewriter effect
+            let i = 0;
+            const timer = setInterval(() => {
+                setDisplayedText(text.substring(0, i + 1));
+                i++;
+                if (i === text.length) clearInterval(timer);
+            }, 50); // Speed of typing
+
+            // Auto-hide after some time (optional, but good for cleanliness)
+            const hideTimer = setTimeout(() => {
+                setIsVisible(false);
+            }, Math.max(3000, text.length * 100 + 2000)); // Dynamic duration
+
+            return () => {
+                clearInterval(timer);
+                clearTimeout(hideTimer);
+            };
+        } else {
+            setIsVisible(false);
+        }
+    }, [text]);
 
     return (
-        <div style={{
-            position: 'absolute',
-            bottom: '10%',
-            left: 0,
-            width: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            zIndex: 100,
-            fontFamily: "'Noto Serif JP', serif",
-            pointerEvents: 'none'
-        }}>
-            {/* Manas Message */}
-            <div style={{
-                color: '#d0f',
-                fontSize: '2rem',
-                textShadow: '0 0 10px #bf00ff',
-                marginBottom: '1rem',
+        <div
+            style={{
+                position: 'absolute',
+                bottom: '10%',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '80%',
                 textAlign: 'center',
-                opacity: manasMessage ? 1 : 0,
-                transition: 'opacity 1s',
-                backgroundColor: 'rgba(0,0,0,0.5)',
-                padding: '10px 20px',
-                borderRadius: '4px'
+                pointerEvents: 'none',
+                opacity: isVisible ? 1 : 0,
+                transition: 'opacity 0.5s ease-in-out',
+                zIndex: 100,
+                textShadow: '0 0 10px rgba(0,0,0,0.8), 0 0 20px black'
+            }}
+        >
+            <div style={{
+                fontFamily: '"Noto Serif JP", serif',
+                fontSize: '2rem',
+                fontWeight: 900,
+                color: '#fff',
+                background: 'linear-gradient(to right, #fff, #bbf, #fff)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                letterSpacing: '0.1em',
+                lineHeight: '1.5'
             }}>
-                {manasMessage}
+                {displayedText}
+                <span className="cursor" style={{ opacity: 0.5 }}>_</span>
             </div>
+            <div style={{
+                marginTop: '10px',
+                height: '1px',
+                width: '100%',
+                background: 'linear-gradient(90deg, transparent, rgba(191,0,255,0.5), transparent)'
+            }}></div>
         </div>
     );
 };
-
-export default ConversationOverlay;
